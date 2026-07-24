@@ -7,6 +7,8 @@ interface User {
   email: string;
   plan: string;
   analysisCount?: number;
+  reportSchedule?: string;
+  agencyName?: string;
 }
 
 interface AppContextType {

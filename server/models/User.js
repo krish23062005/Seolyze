@@ -31,6 +31,19 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    reportSchedule: {
+      type: String,
+      enum: ["none", "weekly", "monthly"],
+      default: "none",
+    },
+    agencyName: {
+      type: String,
+      default: "",
+    },
+    lastReportSentAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true },
 );

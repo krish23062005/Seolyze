@@ -16,112 +16,84 @@ export async function rankTracker(keyword, targetDomain) {
     const page = browser.contexts()[0].pages()[0];
     page.setDefaultNavigationTimeout(45000);
 
-    await page.goto("https://www.google.com", { waitUntil: "networkidle" });
-    try {
-      const btn = await page.$(
-        'button[id="L2AGLb"], form[action*="consent"] button',
-      );
-      if (btn) {
-        await btn.click();
-        await page.waitForTimeout(1500);
-      }
-    } catch {}
-
     let found = null;
     let allResults = [];
-
     const cleanTarget = targetDomain.replace("www.", "").toLowerCase().trim();
 
-    for (let gPage = 0; gPage < 5; gPage++) {
-      await page.goto(
-        `https://www.google.com/search?q=${encodeURIComponent(keyword)}&start=${gPage * 10}&num=10&hl=en&gl=US`,
-        { waitUntil: "networkidle" },
-      );
-
+    // DuckDuckGo HTML version is very reliable and doesn't aggressively block scrapers
+    await page.goto(
+      `https://html.duckduckgo.com/html/?q=${encodeURIComponent(keyword)}`,
+      { waitUntil: "domcontentloaded" },
+    );
+    
+    // We can try to click the "Next" button up to 2 times to get ~30-40 results (Top 3 pages)
+    // This reduces the maximum wait time from ~60s down to ~25s for the user
+    for (let gPage = 0; gPage < 3; gPage++) {
       let pageResults = [];
-      for (let retry = 0; retry < 3; retry++) {
-        try {
-          await page.waitForSelector("h3", { timeout: 8000 });
-          await page.waitForTimeout(1500);
-          pageResults = await page.evaluate(() =>
-            Array.from(document.querySelectorAll("h3"))
-              .map((h3) => {
-                let a = h3.closest("a");
-                if (!a) {
-                  let p = h3.parentElement;
-                  for (let j = 0; j < 5; j++, p = p.parentElement) {
-                    if (p.tagName === "A") {
-                      a = p;
-                      break;
-                    }
-
-                    const sub = p.querySelector("a[href]");
-                    if (sub && sub.contains(h3)) {
-                      a = sub;
-                      break;
-                    }
-                  }
-                }
-
-                if (
-                  !a ||
-                  !a.href.startsWith("http") ||
-                  a.href.includes("google.")
-                )
-                  return null;
-                let s = "",
-                  c = a.parentElement;
-                for (let j = 0; j < 6 && c; j++, c = c.parentElement) {
-                  const txt = c.innerText || "";
-                  if (txt.length > h3.innerText.length + 50) {
-                    s = (
-                      txt
-                        .split("\n")
-                        .find(
-                          (l) =>
-                            l.length > 30 &&
-                            !l.includes(h3.innerText.substring(0, 20)),
-                        ) || ""
-                    )
-                      .trim()
-                      .substring(0, 300);
-                    if (s) break;
-                  }
-                }
-
-                return {
-                  url: a.href,
-                  domain: new URL(a.href).hostname.replace("www.", ""),
-                  title: h3.innerText.trim(),
-                  snippet: s,
-                };
-              })
-              .filter(Boolean),
-          );
-          if (pageResults.length > 0) break;
-          await page.reload({ waitUntil: "networkidle" });
-        } catch (err) {
-          if (retry === 2) break;
-          await page.reload({ waitUntil: "networkidle" });
-        }
+      try {
+        await page.waitForSelector(".result", { timeout: 8000 });
+        pageResults = await page.evaluate(() => {
+          return Array.from(document.querySelectorAll(".result")).map((resultEl) => {
+             const aTitle = resultEl.querySelector("h2.result__title a");
+             const aUrl = resultEl.querySelector("a.result__snippet");
+             
+             let href = aUrl ? aUrl.href : (aTitle ? aTitle.href : "none");
+             if (href.includes('/l/?uddg=')) {
+                 try {
+                     const urlParams = new URLSearchParams(href.split('?')[1]);
+                     if (urlParams.get('uddg')) {
+                       href = decodeURIComponent(urlParams.get('uddg'));
+                     }
+                 } catch(e) {}
+             }
+             
+             return {
+               url: href,
+               domain: href !== "none" ? new URL(href).hostname.replace("www.", "") : "",
+               title: aTitle ? aTitle.innerText.trim() : "",
+               snippet: aUrl ? aUrl.innerText.trim() : ""
+             };
+          }).filter(r => r.url !== "none" && r.title && r.url.startsWith("http"));
+        });
+      } catch (err) {
+        console.error("Error evaluating DDG results:", err.message);
       }
 
       if (!pageResults.length) break;
 
       for (const r of pageResults) {
-        r.position = allResults.length + 1;
-        allResults.push(r);
-        if (
-          !found &&
-          (r.domain.toLowerCase().includes(cleanTarget) ||
-            cleanTarget.includes(r.domain.toLowerCase()))
-        ) {
-          found = { ...r, page: gPage + 1 };
+        // Prevent duplicates across pages
+        if (!allResults.find(existing => existing.url === r.url)) {
+          r.position = allResults.length + 1;
+          allResults.push(r);
+          if (
+            !found &&
+            (r.domain.toLowerCase().includes(cleanTarget) ||
+              cleanTarget.includes(r.domain.toLowerCase()))
+          ) {
+            found = { ...r, page: gPage + 1 };
+          }
         }
       }
 
-      if (found) break;
-      await page.waitForTimeout(2000 + Math.random() * 2000);
+      if (found) break; // Exit early if we found it!
+      
+      // Try to go to next page
+      try {
+        const nextBtn = await page.$("input[value='Next']");
+        if (nextBtn) {
+           await Promise.all([
+             page.waitForNavigation({ timeout: 15000 }),
+             nextBtn.click()
+           ]);
+           // Small delay to ensure DOM is fully ready for next selector query
+           await page.waitForTimeout(500);
+        } else {
+           break;
+        }
+      } catch (navErr) {
+        break; // Stop if navigation fails
+      }
     }
 
     await browser.close();

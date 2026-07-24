@@ -138,7 +138,7 @@ export default function RankTracker() {
     if (!confirm("Delete this keyword tracking?")) return;
     setDeleting(id);
     try {
-      await api.delete(`/api/rank${id}`);
+      await api.delete(`/api/rank/${id}`);
       setKeywords((prev) => prev.filter((k) => k._id !== id));
     } catch (err) {
       console.error("Delete failed:", err);

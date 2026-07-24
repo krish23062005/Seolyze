@@ -1,4 +1,5 @@
 import Analysis from "../models/Analysis.js";
+import User from "../models/User.js";
 import { scrapeUrl } from "../services/scraperService.js";
 import { analyzeSeoData } from "../services/geminiService.js";
 
@@ -20,6 +21,26 @@ export const analyzeUrl = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Invalid URL format" });
     }
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const now = new Date();
+    const todayStr = now.toDateString();
+    const lastDateStr = user.lastAnalysisDate ? new Date(user.lastAnalysisDate).toDateString() : null;
+
+    if (lastDateStr === todayStr) {
+      if (user.plan === "free" && user.analysisCount >= 5) {
+        return res.status(429).json({ success: false, message: "Daily analysis limit reached (5/5). Please upgrade to Pro for unlimited analyses." });
+      }
+      user.analysisCount += 1;
+    } else {
+      user.analysisCount = 1;
+      user.lastAnalysisDate = now;
+    }
+    await user.save();
+
     const analysis = await Analysis.create({
       userId: req.userId,
       url: validUrl.href,

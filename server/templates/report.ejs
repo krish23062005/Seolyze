@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Report - <%= analysis.url %></title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm;
+            background-color: #f8fafc;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+        }
+        * { box-sizing: border-box; }
+        
+        .container {
+            background-color: #ffffff;
+            padding: 40px 50px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* Table Layout for PDF Safety */
+        .header-table {
+            display: table;
+            width: 100%;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 25px;
+            margin-bottom: 35px;
+        }
+        .header-left {
+            display: table-cell;
+            vertical-align: middle;
+        }
+        .header-right {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;
+        }
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            font-weight: 800;
+        }
+        .subtitle {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+        .agency-name {
+            font-weight: 800;
+            color: #3b82f6;
+            font-size: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .score-section {
+            display: table;
+            width: 100%;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 35px;
+        }
+        .score-info {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 35px;
+        }
+        .score-box {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            padding: 35px;
+            border-left: 1px solid rgba(255,255,255,0.2);
+            width: 180px;
+        }
+        .score-info h3 { margin: 0 0 12px 0; font-weight: 600; font-size: 20px; }
+        .score-info p { margin: 0; font-size: 14px; opacity: 0.9; line-height: 1.6; max-width: 400px; }
+        .score-box h2 { font-size: 64px; margin: 0; font-weight: 800; line-height: 1; }
+        .score-box p { margin: 10px 0 0 0; font-size: 12px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1.5px; font-weight: bold; }
+
+        .row-table {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            margin-bottom: 35px;
+        }
+        .col {
+            display: table-cell;
+        }
+        .col-inner {
+            background-color: #f1f5f9;
+            padding: 20px 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 0 7.5px;
+            border: 1px solid #e2e8f0;
+        }
+        .col:first-child .col-inner { margin-left: 0; }
+        .col:last-child .col-inner { margin-right: 0; }
+
+        .category-card h3 { margin: 0 0 10px 0; font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .category-card p { margin: 0; font-size: 28px; font-weight: 800; color: #0f172a; }
+
+        .section-title {
+            font-size: 20px;
+            color: #0f172a;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+            margin-bottom: 25px;
+            margin-top: 45px;
+            font-weight: 800;
+        }
+
+        .stat-card-inner {
+            border: 1px solid #e2e8f0;
+            padding: 25px 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 0 10px;
+            background-color: #ffffff;
+        }
+        .col:first-child .stat-card-inner { margin-left: 0; }
+        .col:last-child .stat-card-inner { margin-right: 0; }
+        .stat-card-inner .value { font-size: 32px; font-weight: 800; color: #3b82f6; margin-bottom: 8px; line-height: 1; }
+        .stat-card-inner .label { font-size: 13px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+
+        .issues-list { list-style: none; padding: 0; margin: 0; }
+        .issue-item {
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #94a3b8;
+            background-color: #f8fafc;
+            page-break-inside: avoid;
+        }
+        .issue-item.critical { border-left-color: #ef4444; background-color: #fef2f2; }
+        .issue-item.warning { border-left-color: #f59e0b; background-color: #fffbeb; }
+        .issue-item h4 { margin: 0 0 10px 0; font-size: 16px; color: #0f172a; font-weight: 700; }
+        .issue-item p { margin: 0; font-size: 14px; color: #475569; line-height: 1.6; }
+        .issue-item strong { color: #0f172a; }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .badge.critical { background: #fee2e2; color: #ef4444; }
+        .badge.warning { background: #fef3c7; color: #d97706; }
+        .badge.info { background: #e0f2fe; color: #0284c7; }
+
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-table">
+            <div class="header-left">
+                <h1>SEO Audit Report</h1>
+                <p class="subtitle"><strong>Target:</strong> <%= analysis.url %> &nbsp;|&nbsp; <strong>Date:</strong> <%= new Date().toLocaleDateString() %></p>
+            </div>
+            <div class="header-right">
+                <% if (agencyName) { %>
+                <div class="agency-name"><%= agencyName %></div>
+                <% } else { %>
+                <div class="agency-name">Seolyze</div>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="score-section">
+            <div class="score-info">
+                <h3>Website Overall Health</h3>
+                <p>Based on comprehensive SEO, Performance, Accessibility, and Best Practices evaluations. A score above 80 indicates a strong foundation.</p>
+            </div>
+            <div class="score-box">
+                <h2><%= analysis.overallScore %></h2>
+                <p>Out of 100</p>
+            </div>
+        </div>
+
+        <div class="row-table categories">
+            <div class="col">
+                <div class="col-inner category-card">
+                    <h3>SEO</h3>
+                    <p><%= analysis.categories.seo %></p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="col-inner category-card">
+                    <h3>Performance</h3>
+                    <p><%= analysis.categories.performance %></p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="col-inner category-card">
+                    <h3>Accessibility</h3>
+                    <p><%= analysis.categories.accessibility %></p>
+                </div>
+            </div>
+            <div class="col">
+                <div class="col-inner category-card">
+                    <h3>Best Practices</h3>
+                    <p><%= analysis.categories.bestPractices %></p>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Quick Stats</h2>
+        <div class="row-table stats-grid">
+            <div class="col">
+                <div class="stat-card-inner">
+                    <div class="value"><%= analysis.loadTime %>ms</div>
+                    <div class="label">Load Time</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card-inner">
+                    <div class="value"><%= Math.round(analysis.pageSize / 1024) %>KB</div>
+                    <div class="label">Page Size</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card-inner">
+                    <div class="value"><%= analysis.wordCount.toLocaleString() %></div>
+                    <div class="label">Word Count</div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Top Issues (<%= analysis.issues.length %>)</h2>
+        <ul class="issues-list">
+            <% analysis.issues.slice(0, 10).forEach(issue => { %>
+                <li class="issue-item <%= issue.severity %>">
+                    <span class="badge <%= issue.severity %>"><%= issue.severity %></span>
+                    <h4><%= issue.message %></h4>
+                    <p><strong>Recommendation:</strong> <%= issue.recommendation %></p>
+                </li>
+            <% }) %>
+            
+            <% if(analysis.issues.length > 10) { %>
+                <li style="text-align: center; font-size: 12px; color: #64748b; margin-top: 15px; page-break-inside: avoid;">
+                    ... and <%= analysis.issues.length - 10 %> more issues.
+                </li>
+            <% } %>
+            
+            <% if(analysis.issues.length === 0) { %>
+                <li class="issue-item" style="border-left-color: #10b981; background-color: #ecfdf5;">
+                    <h4 style="color: #047857;">Great job!</h4>
+                    <p>No major issues were found during the analysis.</p>
+                </li>
+            <% } %>
+        </ul>
+
+        <div class="footer">
+            Report generated via <% if (agencyName) { %><%= agencyName %><% } else { %>Seolyze<% } %> - AI-Powered SEO Analysis
+        </div>
+    </div>
+</body>
+</html>

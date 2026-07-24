@@ -6,8 +6,10 @@ import {
   BarChart3Icon,
   GlobeIcon,
   TrendingUpIcon,
+  Settings,
 } from "lucide-react";
 import AnalysesCard from "../components/AnalysesCard";
+import ReportSettingsModal from "../components/ReportSettingsModal";
 
 import { useApp } from "../context/AppContext";
 export default function Dashboard() {
@@ -16,6 +18,7 @@ export default function Dashboard() {
   const [url, setUrl] = useState("");
   const [analyses, setAnalyses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const fetchRecent = async () => {
     try {
@@ -58,13 +61,22 @@ export default function Dashboard() {
     <div className="min-h-screen pt-16 md:pt-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-medium text-foreground mb-1">
-            Welcome back, <span className="gradient-text">{user?.name}</span>
-          </h1>
-          <p className="text-muted-foreground text-sm">
-            Analyze websites and boost your SEO performance.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-medium text-foreground mb-1">
+              Welcome back, <span className="gradient-text">{user?.name}</span>
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Analyze websites and boost your SEO performance.
+            </p>
+          </div>
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+          >
+            <Settings size={16} className="text-primary" />
+            Report Settings
+          </button>
         </div>
 
         {/* Quick Analyze */}
@@ -181,6 +193,10 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+      <ReportSettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
     </div>
   );
 }

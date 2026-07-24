@@ -1,7 +1,7 @@
 import { SearchIcon, ArrowRightIcon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HomeWave } from "../../assets/assets";
+
 export default function Hero() {
   const [url, setUrl] = useState("");
   const navigate = useNavigate();
@@ -11,13 +11,7 @@ export default function Hero() {
   };
   return (
     <section className="max-w-2xl mx-auto px-4 py-40 sm:py-44 min-h-screen text-center">
-      <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/2 rounded-full text-xs text-primary mb-6 border border-primary/10">
-        <div className="relative flex items-center justify-center">
-          <div className="absolute bg-blue-600 size-2 rounded-full animate-ping"></div>
-          <div className="bg-blue-600 size-1.5 rounded-full"></div>
-        </div>
-        Powered by BrowserBase & Gemini AI
-      </div>
+
       <h1 className="text-4xl sm:text-5xl md:text-6xl font-medium leading-tight mb-6 text-foreground">
         Analyze & Boost Your{" "}
         <span className="gradient-text dm-serif">SEO Rankings</span>
@@ -60,11 +54,6 @@ export default function Hero() {
       <p className="text-muted-foreground text-sm mt-6 ">
         Free — No credit card required • 5 analyses per day
       </p>
-
-      {/* Animated Wave */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden pointer-events-none -z-1">
-        <HomeWave />
-      </div>
     </section>
   );
 }

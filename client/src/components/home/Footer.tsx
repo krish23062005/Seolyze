@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { ChartNoAxesColumnIcon } from "lucide-react";
 import { homefooterLinks } from "../../assets/assets";
-import {
-  SiX,
-  SiInstagram,
-  SiFacebook,
-  SiTwitch,
-} from "@icons-pack/react-simple-icons";
+
 export default function Footer() {
   return (
     <footer className="border-t border-border py-12 bg-card text-foreground">
@@ -21,32 +16,7 @@ export default function Footer() {
               Optimize your website for search engines with AI-powered insights
               and real-time tracking.
             </p>
-            <div className="flex items-center gap-4">
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <SiX size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <SiInstagram size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <SiFacebook size={20} />
-              </a>
-              <a
-                href="#"
-                className="text-muted-foreground hover:text-primary transition-colors"
-              >
-                <SiTwitch size={20} />
-              </a>
-            </div>
+
           </div>
 
           {homefooterLinks.map((section) => (

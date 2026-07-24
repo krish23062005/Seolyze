@@ -5,7 +5,9 @@ import connectDB from "./config/db.js";
 import authRouter from "./routes/authRoutes.js";
 import rankRouter from "./routes/rankRoutes.js";
 import analysisRouter from "./routes/analysisRoutes.js";
+import reportRouter from "./routes/report.js";
 import { startRankTrackingCron } from "./cron/rankTrackingCron.js";
+import { startEmailReportCron } from "./cron/emailReportCron.js";
 
 connectDB();
 const app = express();
@@ -20,8 +22,10 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRouter);
 app.use("/api/rank", rankRouter);
 app.use("/api/analysis", analysisRouter);
+app.use("/api/reports", reportRouter);
 
 startRankTrackingCron();
+startEmailReportCron();
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

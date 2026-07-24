@@ -166,6 +166,27 @@ export default function Report() {
                 </span>
               </div>
             </div>
+            
+            <button
+              onClick={async () => {
+                try {
+                  const res = await api.get(`/api/reports/download/${id}`, { responseType: 'blob' });
+                  const url = window.URL.createObjectURL(new Blob([res.data]));
+                  const link = document.createElement('a');
+                  link.href = url;
+                  link.setAttribute('download', `SEO_Report_${new URL(analysis.url).hostname}.pdf`);
+                  document.body.appendChild(link);
+                  link.click();
+                  link.remove();
+                } catch (err) {
+                  alert("Failed to download PDF");
+                }
+              }}
+              className="bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground border border-primary/20 px-4 py-2 rounded-xl text-sm font-semibold transition-colors flex items-center gap-2"
+            >
+              <FileText size={16} />
+              Download PDF
+            </button>
           </div>
         </div>
 

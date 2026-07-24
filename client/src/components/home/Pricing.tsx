@@ -56,8 +56,7 @@ export default function Pricing() {
             </div>
             <h3 className="text-xl font-semibold mb-1 text-foreground">Pro</h3>
             <div className="flex items-baseline gap-1 mb-6">
-              <span className="text-4xl font-bold text-primary">$19</span>
-              <span className="text-muted-foreground">/month</span>
+              <span className="text-3xl font-bold text-primary">Coming Soon</span>
             </div>
             <ul className="space-y-3 mb-8 flex-1">
               {[
@@ -81,7 +80,7 @@ export default function Pricing() {
               className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-center text-sm hover:opacity-90 transition-opacity"
               style={{ color: "var(--background)" }}
             >
-              Upgrade to Pro
+              Join Waitlist
             </button>
           </div>
         </div>
